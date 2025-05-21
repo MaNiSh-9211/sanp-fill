@@ -78,7 +78,7 @@ app.use(cookieParser());
 connectDB();
 
 // API routes
-app.use('/api/keylogs', require('./routes/keylogs'));
+app.use('/api/keylogs', require('./routes/Keylogs'));
 app.use('/api/auth', require('./routes/auth'));
 
 // Get absolute path to project root

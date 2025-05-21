@@ -3,7 +3,12 @@
   "builds": [
     {
       "src": "server/server.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "client/**"
+        ]
+      }
     }
   ],
   "routes": [
@@ -11,9 +16,5 @@
       "src": "/(.*)",
       "dest": "server/server.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "PORT": "8080"
-  }
+  ]
 }

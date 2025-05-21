@@ -32,10 +32,28 @@ app.get('/dashboard.html', authenticate, (req, res) => {
     res.sendFile(path.join(__dirname, '../client/dashboard.html')); // Serve the dashboard page if authenticated
 });
 
-// // Serve the login page if not authenticated
-// app.get('/login.html', (req, res) => {
-//     res.sendFile(path.join(__dirname, '../client/login.html'));
-// });
+// Send response audio
+app.get('/audio/send', authenticate, (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/sounds/send-response.mp3'));
+});
 
-const PORT = process.env.PORT || 5000;
+// Delete question audio
+app.get('/audio/delete-question', authenticate, (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/sounds/delete-question.mp3'));
+});
+
+// Delete response audio
+app.get('/audio/delete-response', authenticate, (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/sounds/delete-response.mp3'));
+});
+
+app.get('/audio/error', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/sounds/error.mp3'));
+});
+
+app.get('/audio/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/sounds/login.mp3'));
+});
+
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

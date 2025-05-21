@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');// if we dont add this then the delete query want word
 const express = require('express');
 const router = express.Router();
-const Keylog = require('../models/Keylog'); // Replace with your model
+const Keylog = require('../models/keylog'); // Replace with your model
 const KeylogResponse = require('../models/KeylogResponse'); // For responses
 
 // Fetch keylogs one by one

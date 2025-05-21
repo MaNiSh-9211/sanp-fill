@@ -19,4 +19,4 @@ const keylogSchema = new mongoose.Schema({
     },
 }, { timestamps: true }); // Automatically adds `createdAt` and `updatedAt` fields
 
-module.exports = mongoose.model('Keylog', keylogSchema);
+module.exports = mongoose.model('keylog', keylogSchema);
